@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Los Elementos del Crimen: BB & BCS</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Montserrat:wght@400;600;700;800&family=Special+Elite&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brba: {
+                            green: '#00471b',
+                            lightgreen: '#0f8a3c',
+                            neon: '#00cc52',
+                            blue: '#0077b6',
+                            cyan: '#00b4d8',
+                            amber: '#d97706',
+                            dark: '#0a0f0d',
+                            panel: '#ffffff',
+                            cardBg: '#f8fafc',
+                            textDark: '#0f172a'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Montserrat', 'sans-serif'],
+                        chem: ['Cinzel', 'serif'],
+                        typewriter: ['Special Elite', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #0b120f;
+            color: #0f172a;
+            font-family: 'Montserrat', sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* Periodic Table Element Badge Style */
+        .element-symbol {
+            display: inline-block;
+            background: linear-gradient(135deg, #00471b 0%, #03210d 100%);
+            border: 2px solid #00ff66;
+            color: #ffffff !important;
+            font-family: 'Cinzel', serif;
+            font-weight: 900;
+            padding: 2px 8px;
+            box-shadow: 0 0 10px rgba(0, 255, 102, 0.3);
+            text-shadow: 0 0 5px rgba(0, 255, 102, 0.8);
+            position: relative;
+        }
+
+        .element-symbol .num {
+            font-size: 0.55rem;
+            position: absolute;
+            top: 1px;
+            left: 3px;
+            color: #00ff66;
+            font-family: sans-serif;
+            font-weight: normal;
+        }
+
+        /* Background Smoke Canvas */
+        #smoke-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.45;
+        }
+
+        /* Tab Active States */
+        .tab-btn {
+            transition: all 0.25s ease-in-out;
+        }
+        .tab-btn.active {
+            background-color: #00471b;
+            border-color: #00ff66;
+            color: #ffffff !important;
+            box-shadow: 0 0 15px rgba(0, 255, 102, 0.4);
+        }
+
+        /* Accordion Smooth Expand/Collapse */
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.35s ease-out, padding 0.35s ease;
+        }
+        .accordion-content.open {
+            max-height: 1000px;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 9px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #080d0b;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #00471b;
+            border-radius: 4px;
+            border: 1px solid #00ff66;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #0f8a3c;
+        }
+    </style>
+</head>
+<body class="min-h-screen relative font-sans antialiased text-slate-900">
+
+    <!-- Background Smoke Animation Canvas -->
+    <canvas id="smoke-canvas"></canvas>
+
+    <nav class="sticky top-0 z-50 bg-slate-950/95 border-b border-brba-green/60 px-4 py-3 shadow-xl backdrop-blur-md">
+        <div class="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-3">
+            <a href="#" class="flex items-center gap-1 text-xl sm:text-2xl font-bold tracking-wider text-white">
+                <span class="element-symbol mr-1"><span class="num">35</span>Br</span>eaking 
+                <span class="element-symbol ml-1 mr-1"><span class="num">56</span>Ba</span>d
+            </a>
+
+            <!-- Desktop Links -->
+            <div class="hidden lg:flex space-x-6 text-xs xl:text-sm font-bold tracking-wide text-gray-200">
+                <a href="#corruption-redemption" class="hover:text-brba-neon transition-colors">CORRUPCIÓN Y REDENCIÓN</a>
+                <a href="#personajes" class="hover:text-brba-neon transition-colors">EXPEDIENTES & ACORDEONES</a>
+                <a href="#calculadora" class="hover:text-brba-cyan transition-colors">LABORATORIO & LEGAL</a>
+                <a href="#datos-quimicos" class="hover:text-brba-neon transition-colors">DATOS PERTURBADORES</a>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <button onclick="downloadHTML()" class="bg-brba-neon hover:bg-emerald-400 text-slate-950 font-extrabold px-3 py-2 rounded text-xs uppercase tracking-wider shadow-lg flex items-center gap-1.5 transition">
+                    <i class="fa-solid fa-download"></i> <span class="hidden sm:inline">Descargar</span> HTML
+                </button>
+                <a href="#calculadora" class="bg-brba-green hover:bg-brba-lightgreen text-white border border-brba-neon px-3 py-2 rounded text-xs font-bold uppercase tracking-wider shadow-lg transition flex items-center gap-1">
+                    <i class="fa-solid fa-flask"></i> Laboratorio
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <header class="relative z-10 py-12 md:py-20 px-4 text-center max-w-5xl mx-auto flex flex-col items-center">
+        <div class="inline-block mb-4 px-3 py-1 rounded-full border border-brba-cyan/50 bg-slate-900/90 text-brba-cyan text-xs font-mono font-bold tracking-widest uppercase shadow-md">
+            Análisis Psicológico y Químico de la Quiebra Moral
+        </div>
+
+        <h1 class="text-3xl sm:text-5xl md:text-7xl font-extrabold text-white mb-6 tracking-tight leading-tight">
+            <span class="element-symbol text-3xl sm:text-5xl md:text-7xl px-2 sm:px-3 py-1"><span class="num">92</span>U</span>NIVERSO 
+            <span class="element-symbol text-3xl sm:text-5xl md:text-7xl px-2 sm:px-3 py-1"><span class="num">06</span>C</span>RIMINAL
+        </h1>
+
+        <p class="text-base sm:text-lg md:text-xl text-gray-300 max-w-3xl mb-8 leading-relaxed font-medium">
+            Explora la descomposición ética en Albuquerque. Desde la irrefrenable <span class="text-red-400 font-bold">corrupción moral</span> de Walter White, Saul Goodman y Gustavo Fring, hasta el tormentoso camino hacia la <span class="text-brba-cyan font-bold">redención</span> de Jesse Pinkman.
+        </p>
+
+        <div class="flex flex-wrap justify-center gap-4">
+            <a href="#personajes" class="bg-gradient-to-r from-brba-green to-emerald-800 border border-brba-neon text-white px-6 py-3 rounded-lg font-bold shadow-lg hover:brightness-110 transition transform hover:-translate-y-0.5">
+                <i class="fa-solid fa-folder-open mr-2"></i>Ver Expedientes
+            </a>
+            <a href="#calculadora" class="bg-slate-900 border border-brba-cyan text-brba-cyan hover:bg-slate-800 px-6 py-3 rounded-lg font-bold shadow-lg transition transform hover:-translate-y-0.5">
+                <i class="fa-solid fa-calculator mr-2"></i>Calculadora
+            </a>
+        </div>
+    </header>
+
+    <section id="corruption-redemption" class="relative z-10 py-12 px-4 max-w-6xl mx-auto">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Corruption Card -->
+            <div class="bg-white p-6 sm:p-8 rounded-2xl border-t-8 border-t-red-600 shadow-2xl relative overflow-hidden">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-xl font-bold">
+                        <i class="fa-solid fa-skull"></i>
+                    </div>
+                    <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">La Metamorfosis de la Corrupción</h2>
+                </div>
+                <p class="text-slate-900 font-medium leading-relaxed mb-4 text-sm sm:text-base">
+                    La corrupción en esta saga funciona como una reacción catalítica. Walter White (Heisenberg), Saul Goodman (Jimmy McGill) y Gustavo Fring justificaron sus crímenes bajo pretextos de familia, pragmatismo o venganza, disolviendo voluntariamente su ética hasta convertirse en depredadores.
+                </p>
+                <div class="text-xs sm:text-sm font-semibold text-red-900 bg-red-50 p-3.5 rounded-lg border border-red-200">
+                    "Acepté la corrupción no por necesidad, sino porque era extremadamente bueno en ella."
+                </div>
+            </div>
+
+            <!-- Redemption Card -->
+            <div class="bg-white p-6 sm:p-8 rounded-2xl border-t-8 border-t-sky-600 shadow-2xl relative overflow-hidden">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 rounded-full bg-sky-100 text-sky-600 flex items-center justify-center text-xl font-bold">
+                        <i class="fa-solid fa-dove"></i>
+                    </div>
+                    <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">La Odisea de la Redención</h2>
+                </div>
+                <p class="text-slate-900 font-medium leading-relaxed mb-4 text-sm sm:text-base">
+                    Jesse Pinkman representa la humanidad resiliente. A pesar de ser arrastrado al infierno del narcotráfico, nunca perdió la empatía ni el dolor por las inocencias destruidas. Su catarsis requirió sufrimiento extremo y la renuncia total al imperio para reclamar su libertad.
+                </p>
+                <div class="text-xs sm:text-sm font-semibold text-sky-900 bg-sky-50 p-3.5 rounded-lg border border-sky-200">
+                    "El precio del perdón personal fue perderlo absolutamente todo, excepto la libertad."
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="personajes" class="relative z-10 py-12 px-4 max-w-6xl mx-auto">
+        <div class="text-center mb-10">
+            <h2 class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-3">
+                <span class="element-symbol"><span class="num">82</span>Pb</span> Expedientes de Sujetos
+            </h2>
+            <p class="text-gray-300 font-medium">Selecciona un personaje y despliega sus acordeones interactivos para conocer sus secretos.</p>
+        </div>
+
+        <!-- Tabs Navigation -->
+        <div class="flex flex-wrap justify-center gap-2 sm:gap-4 mb-8">
+            <button onclick="switchTab('walter')" id="tab-walter" class="tab-btn active px-4 sm:px-6 py-3 rounded-xl border-2 border-brba-green bg-slate-900 text-white font-bold text-xs sm:text-sm tracking-wider uppercase">
+                <i class="fa-solid fa-flask mr-1 sm:mr-2"></i> Walter White
+            </button>
+            <button onclick="switchTab('jesse')" id="tab-jesse" class="tab-btn px-4 sm:px-6 py-3 rounded-xl border-2 border-slate-800 bg-slate-900 text-gray-300 font-bold text-xs sm:text-sm tracking-wider uppercase">
+                <i class="fa-solid fa-feather mr-1 sm:mr-2"></i> Jesse Pinkman
+            </button>
+            <button onclick="switchTab('saul')" id="tab-saul" class="tab-btn px-4 sm:px-6 py-3 rounded-xl border-2 border-slate-800 bg-slate-900 text-gray-300 font-bold text-xs sm:text-sm tracking-wider uppercase">
+                <i class="fa-solid fa-gavel mr-1 sm:mr-2"></i> Saul Goodman
+            </button>
+            <button onclick="switchTab('gus')" id="tab-gus" class="tab-btn px-4 sm:px-6 py-3 rounded-xl border-2 border-slate-800 bg-slate-900 text-gray-300 font-bold text-xs sm:text-sm tracking-wider uppercase">
+                <i class="fa-solid fa-drumstick-bite mr-1 sm:mr-2"></i> Gustavo Fring
+            </button>
+        </div>
+
+        <!-- CHARACTER DOSSIERS CONTAINER -->
+        <div id="character-content">
+
+            <!-- 1. WALTER WHITE DOSSIER -->
+            <div id="content-walter" class="bg-slate-900/90 rounded-2xl p-4 sm:p-8 border-2 border-emerald-500/50 shadow-2xl grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <!-- Sidebar Profile -->
+                <div class="lg:col-span-4 flex flex-col items-center">
+                    <div class="relative w-full max-w-xs h-80 rounded-xl overflow-hidden border-4 border-emerald-500 shadow-2xl mb-4 group">
+                        <img src="input_file_0.png" alt="Walter White / Heisenberg" class="w-full h-full object-cover object-top">
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent"></div>
+                        <div class="absolute bottom-3 left-3 right-3 text-center">
+                            <span class="text-xs bg-red-600 text-white px-2 py-0.5 rounded font-bold uppercase tracking-wider">Alias: Heisenberg</span>
+                            <h3 class="text-xl font-extrabold text-white mt-1">Walter H. White</h3>
+                        </div>
+                    </div>
+                    <!-- Stats Badge List -->
+                    <div class="w-full space-y-2 text-xs font-mono font-bold">
+                        <div class="flex justify-between bg-white text-slate-900 p-2.5 rounded-lg border border-slate-200 shadow-sm">
+                            <span class="text-slate-600">Nivel Corrupción:</span>
+                            <span class="text-red-600">100% (Absoluto)</span>
+                        </div>
+                        <div class="flex justify-between bg-white text-slate-900 p-2.5 rounded-lg border border-slate-200 shadow-sm">
+                            <span class="text-slate-600">Producto Estrella:</span>
+                            <span class="text-sky-600">Blue Sky (99.1%)</span>
+                        </div>
+                        <div class="flex justify-between bg-white text-slate-900 p-2.5 rounded-lg border border-slate-200 shadow-sm">
+                            <span class="text-slate-600">Estatus Final:</span>
+                            <span class="text-slate-900">Fallecido en Combate</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Content with Accordions -->
+                <div class="lg:col-span-8 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="element-symbol text-2xl"><span class="num">74</span>W</span>
+                            <h3 class="text-2xl sm:text-3xl font-extrabold text-white">El Imperio del Orgullo y el Veneno</h3>
+                        </div>
+
+                        <!-- Card with Dark High-Contrast Text -->
+                        <div class="bg-white rounded-xl p-5 mb-6 shadow-md border border-slate-200">
+                            <p class="text-slate-900 text-sm sm:text-base font-medium leading-relaxed">
+                                Walter White pasó de ser un brillante profesor de química arrinconado por la enfermedad a un despiadado soberano del crimen. La química pura no fue su meta financiera, sino el catalizador para dar rienda suelta a su desmedido ego.
+                            </p>
+                        </div>
+
+                        <!-- ACCORDION SYSTEM FOR WALTER WHITE -->
+                        <div class="space-y-3">
+                            <!-- Accordion 1 -->
+                            <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                                <button onclick="toggleAccordion('acc-w1')" class="w-full px-5 py-3.5 text-left font-bold text-slate-900 flex justify-between items-center hover:bg-slate-50 transition">
+                                    <span class="flex items-center gap-2 text-sm sm:text-base"><i class="fa-solid fa-chart-line text-emerald-600"></i> Etapas de su Degeneración Moral</span>
+                                    <i id="icon-acc-w1" class="fa-solid fa-plus text-emerald-600 transition-transform"></i>
+                                </button>
+                                <div id="acc-w1" class="accordion-content bg-slate-50">
+                                    <div class="p-5 text-slate-900 text-sm font-medium border-t border-slate-200 space-y-2">
+                                        <p><strong>Fase 1 (Desesperación):</strong> Inicia cocinando metanfetamina en la RV para dejar $737,000 a su familia tras su diagnóstico de cáncer.</p>
+                                        <p><strong>Fase 2 (Justificación):</strong> Observa morir a Jane Margolis y orquesta el envenenamiento del niño Brock para recuperar el control sobre Jesse.</p>
+                                        <p><strong>Fase 3 (Megalomanía pura):</strong> Asesina a los 10 testigos en prisión y confiesa abiertamente: "No estoy en el negocio del dinero, estoy en el negocio del imperio".</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Accordion 2 -->
+                            <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                                <button onclick="toggleAccordion('acc-w2')" class="w-full px-5 py-3.5 text-left font-bold text-slate-900 flex justify-between items-center hover:bg-slate-50 transition">
+                                    <span class="flex items-center gap-2 text-sm sm:text-base"><i class="fa-solid fa-skull-crossbones text-red-600"></i> Datos Curiosos & Perturbadores</span>
+                                    <i id="icon-acc-w2" class="fa-solid fa-plus text-emerald-600 transition-transform"></i>
+                                </button>
+                                <div id="acc-w2" class="accordion-content bg-slate-50">
+                                    <div class="p-5 text-slate-900 text-sm font-medium border-t border-slate-200 space-y-3">
+                                        <div class="flex items-start gap-2">
+                                            <i class="fa-solid fa-vial text-emerald-600 mt-1"></i>
+                                            <div><strong>Sintesis de Ricina:</strong> Creó ricina pura extraída de ricino. Su crueldad máxima no fue usarla contra enemigos directos, sino como amenaza latente.</div>
+                                        </div>
+                                        <div class="flex items-start gap-2">
+                                            <i class="fa-solid fa-plane-slash text-red-600 mt-1"></i>
+                                            <div><strong>Tragedia Aérea Wayfarer 515:</strong> Al dejar morir a Jane, desencadenó indirectamente la depresión de su padre controlador aéreo, provocando el choque de aviones sobre Albuquerque.</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. JESSE PINKMAN DOSSIER -->
+            <div id="content-jesse" class="hidden bg-slate-900/90 rounded-2xl p-4 sm:p-8 border-2 border-sky-500/50 shadow-2xl grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <!-- Sidebar Profile -->
+                <div class="lg:col-span-4 flex flex-col items-center">
+                    <div class="relative w-full max-w-xs h-80 rounded-xl overflow-hidden border-4 border-sky-500 shadow-2xl mb-4 group">
+                        <img src="input_file_1.png" alt="Jesse Pinkman" class="w-full h-full object-cover object-top">
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent"></div>
+                        <div class="absolute bottom-3 left-3 right-3 text-center">
+                            <span class="text-xs bg-sky-600 text-white px-2 py-0.5 rounded font-bold uppercase tracking-wider">Alias: Cap'n Cook</span>
+                            <h3 class="text-xl font-extrabold text-white mt-1">Jesse Pinkman</h3>
+                        </div>
+                    </div>
+                    <div class="w-full space-y-2 text-xs font-mono font-bold">
+                        <div class="flex justify-between bg-white text-slate-900 p-2.5 rounded-lg border border-slate-200 shadow-sm">
+                            <span class="text-slate-600">Nivel Corrupción:</span>
+                            <span class="text-emerald-600">Bajo / Arrepentido</span>
+                        </div>
+                        <div class="flex justify-between bg-white text-slate-900 p-2.5 rounded-lg border border-slate-200 shadow-sm">
+                            <span class="text-slate-600">Camino Moral:</span>
+                            <span class="text-sky-600">Redención Total</span>
+                        </div>
+                        <div class="flex justify-between bg-white text-slate-900 p-2.5 rounded-lg border border-slate-200 shadow-sm">
+                            <span class="text-slate-600">Destino (El Camino):</span>
+                            <span class="text-emerald-700">Libre en Alaska</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Content with Accordions -->
+                <div class="lg:col-span-8 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="element-symbol text-2xl" style="border-color:#00b4d8;"><span class="num">15</span>P</span>
+                            <h3 class="text-2xl sm:text-3xl font-extrabold text-white">El Mártir Traumatizado</h3>
+                        </div>
+
+                        <div class="bg-white rounded-xl p-5 mb-6 shadow-md border border-slate-200">
+                            <p class="text-slate-900 text-sm sm:text-base font-medium leading-relaxed">
+                                Jesse Pinkman comenzó como un pequeño traficante inmaduro, pero terminó convirtiéndose en el corazón trágico de la historia. A diferencia de Walter, la culpa devoró su espíritu con cada daño colateral.
+                            </p>
+                        </div>
+
+                        <!-- ACCORDION SYSTEM FOR JESSE PINKMAN -->
+                        <div class="space-y-3">
+                            <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                                <button onclick="toggleAccordion('acc-j1')" class="w-full px-5 py-3.5 text-left font-bold text-slate-900 flex justify-between items-center hover:bg-slate-50 transition">
+                                    <span class="flex items-center gap-2 text-sm sm:text-base"><i class="fa-solid fa-heart-crack text-sky-600"></i> El Tormento Psicológico y la Catarsis</span>
+                                    <i id="icon-acc-j1" class="fa-solid fa-plus text-sky-600 transition-transform"></i>
+                                </button>
+                                <div id="acc-j1" class="accordion-content bg-slate-50">
+                                    <div class="p-5 text-slate-900 text-sm font-medium border-t border-slate-200 space-y-2">
+                                        <p><strong>El Trauma con Gale:</strong> Asesinar a Gale Boetticher a quemarropa fracturó irremediablemente la mente de Jesse, llevándolo a regalar su dinero tirándolo por las calles.</p>
+                                        <p><strong>Esclavitud Neonazi:</strong> Pasó meses encadenado en un foso por la banda de Jack Welker, fabricando metanfetamina bajo tortura constante.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                                <button onclick="toggleAccordion('acc-j2')" class="w-full px-5 py-3.5 text-left font-bold text-slate-900 flex justify-between items-center hover:bg-slate-50 transition">
+                                    <span class="flex items-center gap-2 text-sm sm:text-base"><i class="fa-solid fa-box text-emerald-600"></i> Datos Curiosos & Simbolismos</span>
+                                    <i id="icon-acc-j2" class="fa-solid fa-plus text-sky-600 transition-transform"></i>
+                                </button>
+                                <div id="acc-j2" class="accordion-content bg-slate-50">
+                                    <div class="p-5 text-slate-900 text-sm font-medium border-t border-slate-200 space-y-2">
+                                        <p><strong>La Caja de Madera:</strong> Su sueño recurrente sobre construir una refinada caja de madera representa la pureza del trabajo manual artesanal antes de corromperse en las drogas.</p>
+                                        <p><strong>Nombre en Alaska:</strong> Al final de 'El Camino', renace como Mr. Driscoll en Haines, Alaska, cumpliendo su promesa de paz.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. SAUL GOODMAN DOSSIER -->
+            <div id="content-saul" class="hidden bg-slate-900/90 rounded-2xl p-4 sm:p-8 border-2 border-amber-500/50 shadow-2xl grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <!-- Sidebar Profile -->
+                <div class="lg:col-span-4 flex flex-col items-center">
+                    <div class="relative w-full max-w-xs h-80 rounded-xl overflow-hidden border-4 border-amber-500 shadow-2xl mb-4 group">
+                        <img src="input_file_2.png" alt="Saul Goodman" class="w-full h-full object-cover object-top">
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent"></div>
+                        <div class="absolute bottom-3 left-3 right-3 text-center">
+                            <span class="text-xs bg-amber-500 text-slate-950 px-2 py-0.5 rounded font-bold uppercase tracking-wider">Alias: Jimmy McGill</span>
+                            <h3 class="text-xl font-extrabold text-white mt-1">Saul Goodman</h3>
+                        </div>
+                    </div>
+                    <div class="w-full space-y-2 text-xs font-mono font-bold">
+                        <div class="flex justify-between bg-white text-slate-900 p-2.5 rounded-lg border border-slate-200 shadow-sm">
+                            <span class="text-slate-600">Nivel Corrupción:</span>
+                            <span class="text-amber-600">95% (Oportunista)</span>
+                        </div>
+                        <div class="flex justify-between bg-white text-slate-900 p-2.5 rounded-lg border border-slate-200 shadow-sm">
+                            <span class="text-slate-600">Especialidad:</span>
+                            <span class="text-amber-700">Lavado & Impunidad</span>
+                        </div>
+                        <div class="flex justify-between bg-white text-slate-900 p-2.5 rounded-lg border border-slate-200 shadow-sm">
+                            <span class="text-slate-600">Condena Final:</span>
+                            <span class="text-slate-900">86 Años Prisión</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Content with Accordions -->
+                <div class="lg:col-span-8 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="element-symbol text-2xl" style="border-color:#d97706;"><span class="num">79</span>Au</span>
+                            <h3 class="text-2xl sm:text-3xl font-extrabold text-white">El Arquitecto Legal de la Impunidad</h3>
+                        </div>
+
+                        <div class="bg-white rounded-xl p-5 mb-6 shadow-md border border-slate-200">
+                            <p class="text-slate-900 text-sm sm:text-base font-medium leading-relaxed">
+                                Jimmy McGill mutó en Saul Goodman como defensa psicológica ante la traición y el dolor. Aunque no empuñó armas, constituyó el engranaje legal sin el cual el imperio de Walter White habría colapsado de inmediato.
+                            </p>
+                        </div>
+
+                        <!-- ACCORDION SYSTEM FOR SAUL GOODMAN -->
+                        <div class="space-y-3">
+                            <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                                <button onclick="toggleAccordion('acc-s1')" class="w-full px-5 py-3.5 text-left font-bold text-slate-900 flex justify-between items-center hover:bg-slate-50 transition">
+                                    <span class="flex items-center gap-2 text-sm sm:text-base"><i class="fa-solid fa-scale-balanced text-amber-600"></i> De Jimmy McGill a Saul Goodman</span>
+                                    <i id="icon-acc-s1" class="fa-solid fa-plus text-amber-600 transition-transform"></i>
+                                </button>
+                                <div id="acc-s1" class="accordion-content bg-slate-50">
+                                    <div class="p-5 text-slate-900 text-sm font-medium border-t border-slate-200 space-y-2">
+                                        <p><strong>Evolución:</strong> Inició como un abogado humilde buscando la aprobación de su hermano Chuck. Tras tragedias desgarradoras y la muerte de Howard Hamlin, adoptó un disfraz llamativo de impunidad.</p>
+                                        <p><strong>Redención Final:</strong> En el juicio final, renunció al trato de 7 años de condena y confesó todos sus delitos para limpiar su nombre como Jimmy McGill ante Kim Wexler.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                                <button onclick="toggleAccordion('acc-s2')" class="w-full px-5 py-3.5 text-left font-bold text-slate-900 flex justify-between items-center hover:bg-slate-50 transition">
+                                    <span class="flex items-center gap-2 text-sm sm:text-base"><i class="fa-solid fa-lightbulb text-amber-600"></i> Datos Curiosos</span>
+                                    <i id="icon-acc-s2" class="fa-solid fa-plus text-amber-600 transition-transform"></i>
+                                </button>
+                                <div id="acc-s2" class="accordion-content bg-slate-50">
+                                    <div class="p-5 text-slate-900 text-sm font-medium border-t border-slate-200 space-y-2">
+                                        <p><strong>Origen del Nombre:</strong> "Saul Goodman" nace de la frase coloquial *"It's all good, man!"* ("¡Todo bien, amigo!").</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. GUSTAVO FRING DOSSIER -->
+            <div id="content-gus" class="hidden bg-slate-900/90 rounded-2xl p-4 sm:p-8 border-2 border-purple-500/50 shadow-2xl grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <!-- Sidebar Profile -->
+                <div class="lg:col-span-4 flex flex-col items-center">
+                    <div class="relative w-full max-w-xs h-80 rounded-xl overflow-hidden border-4 border-purple-500 shadow-2xl mb-4 group">
+                        <img src="input_file_3.png" alt="Gustavo Fring" class="w-full h-full object-cover object-top">
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent"></div>
+                        <div class="absolute bottom-3 left-3 right-3 text-center">
+                            <span class="text-xs bg-purple-700 text-white px-2 py-0.5 rounded font-bold uppercase tracking-wider">Alias: Rey del Pollo</span>
+                            <h3 class="text-xl font-extrabold text-white mt-1">Gustavo Fring</h3>
+                        </div>
+                    </div>
+                    <div class="w-full space-y-2 text-xs font-mono font-bold">
+                        <div class="flex justify-between bg-white text-slate-900 p-2.5 rounded-lg border border-slate-200 shadow-sm">
+                            <span class="text-slate-600">Nivel Corrupción:</span>
+                            <span class="text-purple-700">100% Metódico</span>
+                        </div>
+                        <div class="flex justify-between bg-white text-slate-900 p-2.5 rounded-lg border border-slate-200 shadow-sm">
+                            <span class="text-slate-600">Fachada Publica:</span>
+                            <span class="text-amber-600">Los Pollos Hermanos</span>
+                        </div>
+                        <div class="flex justify-between bg-white text-slate-900 p-2.5 rounded-lg border border-slate-200 shadow-sm">
+                            <span class="text-slate-600">Estatus Final:</span>
+                            <span class="text-red-600">Fallecido (Explosión)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Content with Accordions -->
+                <div class="lg:col-span-8 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="element-symbol text-2xl" style="border-color:#a855f7;"><span class="num">33</span>As</span>
+                            <h3 class="text-2xl sm:text-3xl font-extrabold text-white">La Perfección de la Sociopatía</h3>
+                        </div>
+
+                        <div class="bg-white rounded-xl p-5 mb-6 shadow-md border border-slate-200">
+                            <p class="text-slate-900 text-sm sm:text-base font-medium leading-relaxed">
+                                Oculto bajo el uniforme pulcro de 'Los Pollos Hermanos', Gustavo Fring dirigía la red de distribución más sofisticada de Norteamérica, impulsado por una sed implacable de venganza contra el Cártel de Juárez.
+                            </p>
+                        </div>
+
+                        <!-- ACCORDION SYSTEM FOR GUS FRING -->
+                        <div class="space-y-3">
+                            <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                                <button onclick="toggleAccordion('acc-g1')" class="w-full px-5 py-3.5 text-left font-bold text-slate-900 flex justify-between items-center hover:bg-slate-50 transition">
+                                    <span class="flex items-center gap-2 text-sm sm:text-base"><i class="fa-solid fa-skull text-purple-700"></i> Crímenes Metódicos y Venganza</span>
+                                    <i id="icon-acc-g1" class="fa-solid fa-plus text-purple-700 transition-transform"></i>
+                                </button>
+                                <div id="acc-g1" class="accordion-content bg-slate-50">
+                                    <div class="p-5 text-slate-900 text-sm font-medium border-t border-slate-200 space-y-2">
+                                        <p><strong>El Cúter (Box Cutter):</strong> Degolló a su leal secuaz Victor frente a Walt y Jesse únicamente para reafirmar la disciplina absoluta en el superlaboratorio.</p>
+                                        <p><strong>La Masacre del Cártel:</strong> Envenenó a Don Eladio y a todos los capos en México con Tequila Zafiro Añejo, estando dispuesto a consumirlo él mismo.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <section id="calculadora" class="relative z-10 py-12 px-4 max-w-6xl mx-auto">
+        <div class="text-center mb-10">
+            <h2 class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-3">
+                <span class="element-symbol"><span class="num">47</span>Ag</span> Módulos Interactivos
+            </h2>
+            <p class="text-gray-300 font-medium">Calcula la producción química del laboratorio o cotiza tu defensa con Saul Goodman.</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- TOOL 1: Lab Calculator -->
+            <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-2xl border-2 border-emerald-500/30 flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between mb-4 border-b border-slate-200 pb-3">
+                        <h3 class="text-xl font-extrabold text-slate-900 flex items-center gap-2">
+                            <i class="fa-solid fa-calculator text-emerald-600"></i> Calculadora Blue Sky
+                        </h3>
+                        <span class="text-xs bg-emerald-100 text-emerald-800 font-bold px-2.5 py-1 rounded-full font-mono">Simulador 99.1%</span>
+                    </div>
+
+                    <p class="text-xs sm:text-sm text-slate-700 font-medium mb-6">Ajusta los insumos para calcular el rendimiento bruto y valor comercial.</p>
+
+                    <div class="space-y-4 text-slate-900 text-sm font-bold">
+                        <div>
+                            <div class="flex justify-between mb-1">
+                                <span>Metilamina (Litros):</span>
+                                <span id="val-methylamine" class="font-mono text-emerald-600 font-extrabold">50 L</span>
+                            </div>
+                            <input type="range" id="input-methylamine" min="10" max="500" value="50" step="10" class="w-full accent-emerald-600 bg-slate-200 h-2 rounded-lg">
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between mb-1">
+                                <span>Pureza Química (%):</span>
+                                <span id="val-purity" class="font-mono text-sky-600 font-extrabold">99.1%</span>
+                            </div>
+                            <input type="range" id="input-purity" min="70" max="99.9" value="99.1" step="0.1" class="w-full accent-sky-600 bg-slate-200 h-2 rounded-lg">
+                        </div>
+
+                        <div>
+                            <label class="block mb-1">Mercado Objetivo:</label>
+                            <select id="input-market" class="w-full bg-slate-100 border border-slate-300 rounded-lg p-2.5 text-slate-900 font-semibold focus:border-emerald-500 outline-none">
+                                <option value="1">Albuquerque / Local ($40,000 / kg)</option>
+                                <option value="1.5">Europa Oriental ($60,000 / kg)</option>
+                                <option value="2">Red Los Pollos Hermanos ($80,000 / kg)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-6 bg-slate-900 p-5 rounded-xl text-center text-white shadow-inner">
+                    <div class="grid grid-cols-2 gap-2 text-xs text-gray-300 font-medium mb-2">
+                        <div>Producción: <span id="res-kilos" class="text-white font-bold block text-sm">0 kg</span></div>
+                        <div>Calidad: <span id="res-grade" class="text-emerald-400 font-bold block text-sm">Excelente</span></div>
+                    </div>
+                    <div class="text-xs text-gray-400 uppercase tracking-wider font-semibold">Valor Bruto Estimado:</div>
+                    <div id="res-revenue" class="text-3xl font-extrabold text-emerald-400 font-mono mt-1">$0</div>
+                </div>
+            </div>
+
+            <!-- TOOL 2: Legal Estimator -->
+            <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-2xl border-2 border-amber-500/30 flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between mb-4 border-b border-slate-200 pb-3">
+                        <h3 class="text-xl font-extrabold text-slate-900 flex items-center gap-2">
+                            <i class="fa-solid fa-briefcase text-amber-600"></i> Cotizador Better Call Saul
+                        </h3>
+                        <span class="text-xs bg-amber-100 text-amber-900 font-bold px-2.5 py-1 rounded-full font-mono">Honorarios Legales</span>
+                    </div>
+
+                    <p class="text-xs sm:text-sm text-slate-700 font-medium mb-6">Selecciona los cargos imputados por la DEA para calcular la retención legal.</p>
+
+                    <div class="space-y-3 text-slate-900 text-sm font-bold">
+                        <label class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200 hover:bg-slate-100 cursor-pointer transition">
+                            <input type="checkbox" class="legal-charge accent-amber-600 w-4 h-4" value="15000">
+                            <span>Posesión e Infracciones Menores</span>
+                            <span class="ml-auto text-xs font-mono text-amber-700">+$15,000</span>
+                        </label>
+
+                        <label class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200 hover:bg-slate-100 cursor-pointer transition">
+                            <input type="checkbox" class="legal-charge accent-amber-600 w-4 h-4" value="75000">
+                            <span>Lavado de Dinero e Impuestos</span>
+                            <span class="ml-auto text-xs font-mono text-amber-700">+$75,000</span>
+                        </label>
+
+                        <label class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200 hover:bg-slate-100 cursor-pointer transition">
+                            <input type="checkbox" class="legal-charge accent-amber-600 w-4 h-4" value="150000">
+                            <span>Conspiración de Cártel Organizado</span>
+                            <span class="ml-auto text-xs font-mono text-amber-700">+$150,000</span>
+                        </label>
+
+                        <label class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200 hover:bg-slate-100 cursor-pointer transition">
+                            <input type="checkbox" id="charge-vacuum" class="accent-amber-600 w-4 h-4" value="125000">
+                            <span>Servicio de Desaparición (Ed Galbraith)</span>
+                            <span class="ml-auto text-xs font-mono text-amber-700">+$125,000</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="mt-6 bg-slate-900 p-5 rounded-xl text-center text-white shadow-inner">
+                    <div class="text-xs text-gray-400 uppercase tracking-wider font-semibold">Total Honorarios Defensivos:</div>
+                    <div id="res-legal-total" class="text-3xl font-extrabold text-amber-400 font-mono mt-1">$0</div>
+                    <button onclick="callSaulAlert()" class="mt-3 w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold py-2.5 rounded-lg text-xs uppercase tracking-widest transition">
+                        ¡Llamar a Saul Goodman Ahora!
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="datos-quimicos" class="relative z-10 py-12 px-4 max-w-6xl mx-auto">
+        <div class="text-center mb-10">
+            <h2 class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-3">
+                <span class="element-symbol"><span class="num">84</span>Po</span> Elementos Perturbadores
+            </h2>
+            <p class="text-gray-300 font-medium">Curiosidades científicas y secretos de producción en alta legibilidad.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="bg-white p-6 rounded-2xl shadow-xl border-l-4 border-l-emerald-600">
+                <div class="flex items-center gap-3 mb-2">
+                    <span class="element-symbol text-lg"><span class="num">09</span>F</span>
+                    <h4 class="font-extrabold text-slate-900">Ácido Fluorhídrico</h4>
+                </div>
+                <p class="text-slate-900 text-xs sm:text-sm font-medium leading-relaxed">
+                    El HF destruye tejidos orgánicos pero no disuelve las bañeras de plástico como ocurrió en la temporada 1; la producción alteró los efectos para no dar instrucciones reales.
+                </p>
+            </div>
+
+            <div class="bg-white p-6 rounded-2xl shadow-xl border-l-4 border-l-sky-600">
+                <div class="flex items-center gap-3 mb-2">
+                    <span class="element-symbol text-lg" style="border-color:#00b4d8;"><span class="num">12</span>Mg</span>
+                    <h4 class="font-extrabold text-slate-900">Caramelo de Roca</h4>
+                </div>
+                <p class="text-slate-900 text-xs sm:text-sm font-medium leading-relaxed">
+                    La metanfetamina azul "Blue Sky" era en realidad caramelo de roca teñido de azul. Bryan Cranston y Aaron Paul comían la utilería constantemente entre tomas.
+                </p>
+            </div>
+
+            <div class="bg-white p-6 rounded-2xl shadow-xl border-l-4 border-l-amber-600">
+                <div class="flex items-center gap-3 mb-2">
+                    <span class="element-symbol text-lg" style="border-color:#d97706;"><span class="num">80</span>Hg</span>
+                    <h4 class="font-extrabold text-slate-900">Fulminato de Mercurio</h4>
+                </div>
+                <p class="text-slate-900 text-xs sm:text-sm font-medium leading-relaxed">
+                    La explosión en la oficina de Tuco con fulminato de mercurio demostró el poder de Walt, aunque en la vida real una bolsa entera habría explotado por la simple fricción.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Custom Modal for Alerts -->
+    <div id="custom-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white max-w-md w-full p-6 sm:p-8 rounded-2xl border-4 border-amber-500 text-center shadow-2xl relative">
+            <div class="w-16 h-16 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">
+                <i class="fa-solid fa-phone"></i>
+            </div>
+            <h3 class="text-2xl font-extrabold text-slate-900 mb-2 font-typewriter">555-0199 - BETTER CALL SAUL!</h3>
+            <p id="modal-text" class="text-slate-700 text-sm font-semibold mb-6">Un representante de las oficinas de Saul Goodman se pondrá en contacto. ¡No hables con la DEA sin tu abogado!</p>
+            <button onclick="closeModal()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold px-6 py-2.5 rounded-lg text-xs uppercase tracking-wider transition">
+                Entendido
+            </button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="relative z-10 border-t border-slate-800 py-8 text-center text-xs text-gray-400 bg-slate-950 mt-16">
+        <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div>
+                <span class="font-bold text-gray-200">Tributo Fan Made Breaking Bad & Better Call Saul</span> © 2026
+            </div>
+            <div class="flex gap-4 text-base text-gray-300">
+                <i class="fa-solid fa-flask hover:text-emerald-400"></i>
+                <i class="fa-solid fa-scale-balanced hover:text-amber-400"></i>
+                <i class="fa-solid fa-biohazard hover:text-red-400"></i>
+            </div>
+            <div>
+                HTML Autónomo • Totalmente Responsivo
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        /* Character Tab Navigation Switcher */
+        function switchTab(character) {
+            const tabs = ['walter', 'jesse', 'saul', 'gus'];
+            tabs.forEach(t => {
+                document.getElementById('content-' + t).classList.add('hidden');
+                document.getElementById('tab-' + t).classList.remove('active');
+                document.getElementById('tab-' + t).classList.add('text-gray-300');
+            });
+
+            document.getElementById('content-' + character).classList.remove('hidden');
+            const activeTab = document.getElementById('tab-' + character);
+            activeTab.classList.add('active');
+            activeTab.classList.remove('text-gray-300');
+        }
+
+        /* Collapsible Accordion Toggle Handler */
+        function toggleAccordion(accId) {
+            const content = document.getElementById(accId);
+            const icon = document.getElementById('icon-' + accId);
+
+            if (content.classList.contains('open')) {
+                content.classList.remove('open');
+                if (icon) {
+                    icon.classList.remove('fa-minus', 'rotate-180');
+                    icon.classList.add('fa-plus');
+                }
+            } else {
+                content.classList.add('open');
+                if (icon) {
+                    icon.classList.remove('fa-plus');
+                    icon.classList.add('fa-minus', 'rotate-180');
+                }
+            }
+        }
+
+        /* Calculator Logic */
+        const inputMeth = document.getElementById('input-methylamine');
+        const inputPurity = document.getElementById('input-purity');
+        const inputMarket = document.getElementById('input-market');
+
+        function updateLabCalculator() {
+            const liters = parseFloat(inputMeth.value);
+            const purity = parseFloat(inputPurity.value);
+            const marketMultiplier = parseFloat(inputMarket.value);
+
+            document.getElementById('val-methylamine').innerText = liters + ' L';
+            document.getElementById('val-purity').innerText = purity + '%';
+
+            const kilos = (liters * 1.8 * (purity / 100)).toFixed(1);
+            const basePricePerKg = 40000;
+            const revenue = Math.round(kilos * basePricePerKg * marketMultiplier * (purity / 95));
+
+            document.getElementById('res-kilos').innerText = kilos + ' kg';
+            document.getElementById('res-revenue').innerText = '$' + revenue.toLocaleString('en-US');
+
+            const gradeElem = document.getElementById('res-grade');
+            if (purity >= 99) {
+                gradeElem.innerText = 'Blue Sky (Perfecto)';
+                gradeElem.className = 'text-sky-400 font-bold block text-sm';
+            } else if (purity >= 90) {
+                gradeElem.innerText = 'Aceptable';
+                gradeElem.className = 'text-emerald-400 font-bold block text-sm';
+            } else {
+                gradeElem.innerText = 'Impuro';
+                gradeElem.className = 'text-red-400 font-bold block text-sm';
+            }
+        }
+
+        inputMeth.addEventListener('input', updateLabCalculator);
+        inputPurity.addEventListener('input', updateLabCalculator);
+        inputMarket.addEventListener('change', updateLabCalculator);
+        updateLabCalculator();
+
+        /* Legal Fee Calculator */
+        const legalCheckboxes = document.querySelectorAll('.legal-charge, #charge-vacuum');
+        function updateLegalCalculator() {
+            let total = 0;
+            legalCheckboxes.forEach(cb => {
+                if (cb.checked) {
+                    total += parseInt(cb.value);
+                }
+            });
+            document.getElementById('res-legal-total').innerText = '$' + total.toLocaleString('en-US');
+        }
+
+        legalCheckboxes.forEach(cb => cb.addEventListener('change', updateLegalCalculator));
+
+        /* Modal Handlers */
+        function callSaulAlert() {
+            document.getElementById('custom-modal').classList.remove('hidden');
+        }
+        function closeModal() {
+            document.getElementById('custom-modal').classList.add('hidden');
+        }
+
+        /* Direct Download HTML File Function */
+        function downloadHTML() {
+            const htmlContent = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'index.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        /* Canvas Background Smoke Animation */
+        const canvas = document.getElementById('smoke-canvas');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class SmokeParticle {
+            constructor() { this.reset(); }
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = canvas.height + Math.random() * 100;
+                this.radius = Math.random() * 40 + 20;
+                this.speedY = Math.random() * 0.7 + 0.2;
+                this.speedX = (Math.random() - 0.5) * 0.4;
+                this.alpha = Math.random() * 0.12 + 0.04;
+                this.color = Math.random() > 0.5 ? '0, 204, 82' : '0, 180, 216';
+            }
+            update() {
+                this.y -= this.speedY;
+                this.x += this.speedX;
+                this.radius += 0.08;
+                if (this.y < -this.radius) this.reset();
+            }
+            draw() {
+                ctx.beginPath();
+                const gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.radius);
+                gradient.addColorStop(0, `rgba(${this.color}, ${this.alpha})`);
+                gradient.addColorStop(1, `rgba(${this.color}, 0)`);
+                ctx.fillStyle = gradient;
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        const particles = Array.from({ length: 30 }, () => new SmokeParticle());
+
+        function animateSmoke() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => { p.update(); p.draw(); });
+            requestAnimationFrame(animateSmoke);
+        }
+
+        window.onload = function() {
+            animateSmoke();
+        };
+    </script>
+</body>
+</html>
